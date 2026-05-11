@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>9x9 Maze Designer</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <header>
+      <h1>9&times;9 Maze Designer</h1>
+      <p class="subtitle">
+        Center 3&times;3 is always open. Toggle 1&ndash;4 entrances on the middle of each side.
+        Click or drag inside the grid to paint walls and paths.
+      </p>
+    </header>
+
+    <section class="controls">
+      <div class="control-group">
+        <span class="control-label">Entrances</span>
+        <button type="button" class="btn entrance-btn" data-side="top">Top</button>
+        <button type="button" class="btn entrance-btn" data-side="right">Right</button>
+        <button type="button" class="btn entrance-btn" data-side="bottom">Bottom</button>
+        <button type="button" class="btn entrance-btn" data-side="left">Left</button>
+      </div>
+
+      <div class="control-group">
+        <span class="control-label">Paint</span>
+        <button type="button" class="btn mode-btn is-active" data-mode="path">Path</button>
+        <button type="button" class="btn mode-btn" data-mode="wall">Wall</button>
+      </div>
+
+      <div class="control-group">
+        <span class="control-label">Grid</span>
+        <button type="button" class="btn" id="btn-clear">Clear paths</button>
+        <button type="button" class="btn" id="btn-check">Check solvable</button>
+      </div>
+
+      <div class="control-group">
+        <span class="control-label">Data</span>
+        <button type="button" class="btn" id="btn-export">Export JSON</button>
+        <button type="button" class="btn" id="btn-import">Import JSON</button>
+      </div>
+    </section>
+
+    <section class="board">
+      <div id="grid" class="grid" aria-label="9 by 9 maze grid"></div>
+    </section>
+
+    <section class="status">
+      <p id="status-line">Ready.</p>
+    </section>
+
+    <section class="io">
+      <label for="json-area">Maze JSON</label>
+      <textarea id="json-area" spellcheck="false" rows="8"></textarea>
+    </section>
+
+    <section class="legend">
+      <div><span class="swatch swatch-path"></span> Path</div>
+      <div><span class="swatch swatch-wall"></span> Wall</div>
+      <div><span class="swatch swatch-center"></span> Center (locked open)</div>
+      <div><span class="swatch swatch-entrance"></span> Entrance</div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
