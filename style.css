@@ -6,15 +6,17 @@
   --muted: #94a3b8;
   --accent: #38bdf8;
   --accent-2: #0ea5e9;
-  --cell: #f8fafc;
-  --cell-edge: #e2e8f0;
-  --center: #fde68a;
-  --center-edge: #f59e0b;
-  --wall: #0f172a;
-  --entrance: #10b981;
-  --path: #38bdf8;
-  --danger: #f87171;
   --ok: #4ade80;
+  --danger: #f87171;
+
+  --c-top: #22c55e;
+  --c-top-dark: #15803d;
+  --c-right: #ef4444;
+  --c-right-dark: #b91c1c;
+  --c-bottom: #3b82f6;
+  --c-bottom-dark: #1d4ed8;
+  --c-left: #eab308;
+  --c-left-dark: #a16207;
 }
 
 * { box-sizing: border-box; }
@@ -24,7 +26,7 @@ html, body {
   padding: 0;
   background: radial-gradient(circle at top, #1e293b, #0f172a 60%);
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   min-height: 100vh;
 }
 
@@ -37,7 +39,6 @@ html, body {
 header h1 {
   margin: 0 0 6px;
   font-size: 28px;
-  letter-spacing: 0.3px;
 }
 
 .subtitle {
@@ -90,13 +91,6 @@ header h1 {
 
 .btn:active { transform: translateY(1px); }
 
-.btn.is-active {
-  background: var(--accent);
-  border-color: var(--accent-2);
-  color: #0f172a;
-  font-weight: 600;
-}
-
 .btn-primary {
   background: var(--accent);
   border-color: var(--accent-2);
@@ -109,21 +103,32 @@ header h1 {
   border-color: var(--accent);
 }
 
-.entrance-btn.is-active {
-  background: var(--entrance);
-  border-color: #047857;
-  color: #052e1f;
+.entrance-btn.is-active[data-side="top"] {
+  background: var(--c-top);
+  border-color: var(--c-top-dark);
+  color: #042f1a;
   font-weight: 600;
 }
 
-.select {
-  background: var(--panel-2);
-  color: var(--text);
-  border: 1px solid #334155;
-  border-radius: 8px;
-  padding: 6px 10px;
-  font-size: 13px;
-  cursor: pointer;
+.entrance-btn.is-active[data-side="right"] {
+  background: var(--c-right);
+  border-color: var(--c-right-dark);
+  color: #2a0808;
+  font-weight: 600;
+}
+
+.entrance-btn.is-active[data-side="bottom"] {
+  background: var(--c-bottom);
+  border-color: var(--c-bottom-dark);
+  color: #0a1a3a;
+  font-weight: 600;
+}
+
+.entrance-btn.is-active[data-side="left"] {
+  background: var(--c-left);
+  border-color: var(--c-left-dark);
+  color: #2a1c00;
+  font-weight: 600;
 }
 
 .board {
@@ -133,10 +138,10 @@ header h1 {
 }
 
 #maze-svg {
-  background: #020617;
-  border: 1px solid #1e293b;
-  border-radius: 14px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  background: #1e1b4b;
+  border: 1px solid #312e81;
+  border-radius: 18px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
   display: block;
   width: 480px;
   height: 480px;
@@ -144,34 +149,38 @@ header h1 {
 }
 
 #maze-svg .cell-bg {
-  fill: var(--cell);
+  fill: #312e81;
+  fill-opacity: 0.35;
+  stroke: #4338ca;
+  stroke-opacity: 0.35;
+  stroke-width: 1;
 }
 
 #maze-svg .cell-center {
-  fill: var(--center);
+  fill: #fde68a;
+  fill-opacity: 0.10;
+  stroke: #4338ca;
+  stroke-opacity: 0.35;
+  stroke-width: 1;
 }
 
-#maze-svg .wall {
-  stroke: var(--wall);
-  stroke-width: 4;
-  stroke-linecap: square;
+#maze-svg .center-outline {
+  fill: none;
+  stroke: #fbbf24;
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
+  opacity: 0.45;
+  rx: 6;
 }
 
-#maze-svg .entrance-marker {
-  fill: var(--entrance);
-}
-
-#maze-svg .solution-line {
-  stroke: var(--path);
-  stroke-width: 6;
+#maze-svg .path-line {
+  fill: none;
   stroke-linecap: round;
   stroke-linejoin: round;
-  fill: none;
-  opacity: 0.75;
 }
 
-#maze-svg .solution-dot {
-  fill: var(--path);
+#maze-svg .entrance-arrow {
+  /* fill set inline per side */
 }
 
 .status {
@@ -193,7 +202,6 @@ header h1 {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  margin-bottom: 20px;
 }
 
 .io label {
@@ -214,27 +222,3 @@ header h1 {
   border-radius: 8px;
   padding: 10px;
 }
-
-.legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 14px;
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.swatch {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  border-radius: 3px;
-  vertical-align: middle;
-  margin-right: 6px;
-  border: 1px solid rgba(255,255,255,0.1);
-}
-
-.swatch-cell { background: var(--cell); }
-.swatch-center { background: var(--center); }
-.swatch-wall { background: var(--wall); border-color: #475569; }
-.swatch-entrance { background: var(--entrance); }
-.swatch-path { background: var(--path); }

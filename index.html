@@ -3,28 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>9x9 Maze Designer</title>
+<title>9x9 Flow Designer</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <main class="app">
     <header>
-      <h1>9&times;9 Maze Designer</h1>
+      <h1>9&times;9 Flow Designer</h1>
       <p class="subtitle">
-        Every cell is a room; walls live between cells. The center 3&times;3 is one open chamber.
-        Pick 1&ndash;4 side entrances and hit Generate.
+        Each entrance is its own colored snake. Snakes never cross, never dead-end,
+        and together fill every cell. Every snake ends inside the center chamber.
       </p>
     </header>
 
     <section class="controls">
       <div class="control-group">
         <span class="control-label">Generate</span>
-        <select id="gen-style" class="select" title="How many loops in the maze">
-          <option value="0">One path (perfect)</option>
-          <option value="0.08" selected>A few loops</option>
-          <option value="0.25">Many loops</option>
-        </select>
-        <button type="button" class="btn btn-primary" id="btn-generate">Generate maze</button>
+        <button type="button" class="btn btn-primary" id="btn-generate">Generate flow</button>
       </div>
 
       <div class="control-group">
@@ -37,8 +32,7 @@
       </div>
 
       <div class="control-group">
-        <span class="control-label">View</span>
-        <button type="button" class="btn" id="btn-solution">Show solution</button>
+        <span class="control-label">Data</span>
         <button type="button" class="btn" id="btn-export">Export JSON</button>
       </div>
     </section>
@@ -52,16 +46,8 @@
     </section>
 
     <section class="io">
-      <label for="json-area">Maze JSON</label>
+      <label for="json-area">Flow JSON</label>
       <textarea id="json-area" spellcheck="false" rows="6" readonly></textarea>
-    </section>
-
-    <section class="legend">
-      <div><span class="swatch swatch-cell"></span> Room</div>
-      <div><span class="swatch swatch-center"></span> Center chamber</div>
-      <div><span class="swatch swatch-wall"></span> Wall</div>
-      <div><span class="swatch swatch-entrance"></span> Entrance</div>
-      <div><span class="swatch swatch-path"></span> Solution</div>
     </section>
   </main>
 
