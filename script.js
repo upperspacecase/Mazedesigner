@@ -137,13 +137,37 @@
   }
 
   function generateMaze(loopFactor) {
-    initWalls();
-    openCenterChamber();
-
     if (activeSides().length === 0) {
       randomizeEntrances();
       syncEntranceButtons();
     }
+
+    // Defensive retry — Kruskal's on a connected grid always produces a
+    // spanning tree, so this shouldn't ever loop, but we verify anyway.
+    let attempt = 0;
+    while (true) {
+      attempt++;
+      carveOneMaze(loopFactor);
+      const unreachable = unreachableEntrances();
+      if (unreachable.length === 0) break;
+      if (attempt >= 10) {
+        setStatus(
+          `Failed to connect every entrance to the center after ${attempt} attempts ` +
+          `(${unreachable.join(", ")} unreachable). This shouldn't happen — please report.`,
+          "err"
+        );
+        break;
+      }
+    }
+
+    showingSolution = true;
+    render();
+    return activeSides();
+  }
+
+  function carveOneMaze(loopFactor) {
+    initWalls();
+    openCenterChamber();
 
     const uf = makeUF();
     for (let r = 0; r < SIZE; r++) {
@@ -162,7 +186,7 @@
     const skipped = [];
     for (const [r1, c1, r2, c2] of edges) {
       const a = cellId(r1, c1), b = cellId(r2, c2);
-      if (a === b) continue; // both in center super-node
+      if (a === b) continue;
       if (uf.find(a) !== uf.find(b)) {
         openPassage(r1, c1, r2, c2);
         uf.union(a, b);
@@ -181,9 +205,14 @@
     }
 
     applyEntrances();
-    showingSolution = false;
-    render();
-    return activeSides();
+  }
+
+  function unreachableEntrances() {
+    const bad = [];
+    for (const side of activeSides()) {
+      if (!bfsFromEntrance(side)) bad.push(side);
+    }
+    return bad;
   }
 
   // --- Solution overlay ----------------------------------------------------
@@ -341,11 +370,24 @@
   document.getElementById("btn-generate").addEventListener("click", () => {
     const loopFactor = parseFloat(document.getElementById("gen-style").value);
     const sides = generateMaze(loopFactor);
-    setStatus(
-      `Generated maze with ${sides.length} entrance${sides.length === 1 ? "" : "s"} (${sides.join(", ")}).`,
-      "ok"
-    );
+    reportGeneration(sides);
   });
+
+  function reportGeneration(sides) {
+    const bad = unreachableEntrances();
+    if (bad.length === 0) {
+      setStatus(
+        `Generated maze. All ${sides.length} entrance${sides.length === 1 ? "" : "s"} ` +
+        `(${sides.join(", ")}) reach the center. Solution shown.`,
+        "ok"
+      );
+    } else {
+      setStatus(
+        `Generated maze, but ${bad.join(", ")} cannot reach the center.`,
+        "err"
+      );
+    }
+  }
 
   document.getElementById("btn-rand-entrances").addEventListener("click", () => {
     randomizeEntrances();
@@ -362,7 +404,21 @@
       btn.classList.toggle("is-active", entrancesActive[side]);
       applyEntrances();
       render();
-      setStatus(`Entrance "${side}" ${entrancesActive[side] ? "enabled" : "disabled"}.`);
+      const bad = unreachableEntrances();
+      if (bad.length === 0 && activeSides().length > 0) {
+        setStatus(
+          `Entrance "${side}" ${entrancesActive[side] ? "enabled" : "disabled"}. ` +
+          `All ${activeSides().length} entrances reach the center.`,
+          "ok"
+        );
+      } else if (activeSides().length === 0) {
+        setStatus(`Entrance "${side}" disabled. No entrances active.`);
+      } else {
+        setStatus(
+          `Entrance "${side}" toggled, but ${bad.join(", ")} cannot reach the center.`,
+          "err"
+        );
+      }
     });
   });
 
@@ -403,9 +459,5 @@
   randomizeEntrances();
   syncEntranceButtons();
   const initialSides = generateMaze(0.08);
-  setStatus(
-    `Generated maze with ${initialSides.length} entrance${initialSides.length === 1 ? "" : "s"} (${initialSides.join(", ")}). ` +
-    `Hit Generate for a new one.`,
-    "ok"
-  );
+  reportGeneration(initialSides);
 })();
