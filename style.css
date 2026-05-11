@@ -6,14 +6,13 @@
   --muted: #94a3b8;
   --accent: #38bdf8;
   --accent-2: #0ea5e9;
-  --wall: #0b1220;
-  --wall-edge: #1e293b;
-  --path: #f8fafc;
-  --path-edge: #cbd5e1;
-  --center: #fbbf24;
-  --center-edge: #b45309;
-  --entrance: #34d399;
-  --entrance-edge: #047857;
+  --cell: #f8fafc;
+  --cell-edge: #e2e8f0;
+  --center: #fde68a;
+  --center-edge: #f59e0b;
+  --wall: #0f172a;
+  --entrance: #10b981;
+  --path: #38bdf8;
   --danger: #f87171;
   --ok: #4ade80;
 }
@@ -89,9 +88,7 @@ header h1 {
   border-color: #475569;
 }
 
-.btn:active {
-  transform: translateY(1px);
-}
+.btn:active { transform: translateY(1px); }
 
 .btn.is-active {
   background: var(--accent);
@@ -112,6 +109,13 @@ header h1 {
   border-color: var(--accent);
 }
 
+.entrance-btn.is-active {
+  background: var(--entrance);
+  border-color: #047857;
+  color: #052e1f;
+  font-weight: 600;
+}
+
 .select {
   background: var(--panel-2);
   color: var(--text);
@@ -122,71 +126,52 @@ header h1 {
   cursor: pointer;
 }
 
-.entrance-btn.is-active {
-  background: var(--entrance);
-  border-color: var(--entrance-edge);
-  color: #052e1f;
-  font-weight: 600;
-}
-
 .board {
   display: flex;
   justify-content: center;
   margin: 16px 0 20px;
 }
 
-.grid {
-  --cell: 44px;
-  display: grid;
-  grid-template-columns: repeat(9, var(--cell));
-  grid-template-rows: repeat(9, var(--cell));
-  gap: 2px;
-  padding: 10px;
+#maze-svg {
   background: #020617;
   border: 1px solid #1e293b;
   border-radius: 14px;
   box-shadow: 0 10px 40px rgba(0,0,0,0.4);
-  user-select: none;
-  touch-action: none;
+  display: block;
+  width: 480px;
+  height: 480px;
+  max-width: 100%;
 }
 
-.cell {
-  background: var(--wall);
-  border: 1px solid var(--wall-edge);
-  border-radius: 4px;
-  cursor: pointer;
-  position: relative;
-  transition: background 0.08s ease;
+#maze-svg .cell-bg {
+  fill: var(--cell);
 }
 
-.cell.is-path {
-  background: var(--path);
-  border-color: var(--path-edge);
+#maze-svg .cell-center {
+  fill: var(--center);
 }
 
-.cell.is-center {
-  background: var(--center);
-  border-color: var(--center-edge);
-  cursor: not-allowed;
+#maze-svg .wall {
+  stroke: var(--wall);
+  stroke-width: 4;
+  stroke-linecap: square;
 }
 
-.cell.is-entrance {
-  background: var(--entrance);
-  border-color: var(--entrance-edge);
+#maze-svg .entrance-marker {
+  fill: var(--entrance);
 }
 
-.cell.is-entrance-slot:not(.is-entrance) {
-  box-shadow: inset 0 0 0 2px rgba(52, 211, 153, 0.25);
-  cursor: not-allowed;
+#maze-svg .solution-line {
+  stroke: var(--path);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  opacity: 0.75;
 }
 
-.cell.is-path-on-route::after {
-  content: "";
-  position: absolute;
-  inset: 25%;
-  border-radius: 50%;
-  background: var(--accent);
-  opacity: 0.65;
+#maze-svg .solution-dot {
+  fill: var(--path);
 }
 
 .status {
@@ -248,7 +233,8 @@ header h1 {
   border: 1px solid rgba(255,255,255,0.1);
 }
 
-.swatch-path { background: var(--path); }
-.swatch-wall { background: var(--wall); }
+.swatch-cell { background: var(--cell); }
 .swatch-center { background: var(--center); }
+.swatch-wall { background: var(--wall); border-color: #475569; }
 .swatch-entrance { background: var(--entrance); }
+.swatch-path { background: var(--path); }

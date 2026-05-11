@@ -11,19 +11,18 @@
     <header>
       <h1>9&times;9 Maze Designer</h1>
       <p class="subtitle">
-        Center 3&times;3 is always open. Pick which sides get an entrance (or hit Random),
-        choose a difficulty, and let the tool generate a solvable maze for you.
-        Painting controls are there if you want to hand-tweak the result.
+        Every cell is a room; walls live between cells. The center 3&times;3 is one open chamber.
+        Pick 1&ndash;4 side entrances and hit Generate.
       </p>
     </header>
 
     <section class="controls">
       <div class="control-group">
         <span class="control-label">Generate</span>
-        <select id="gen-difficulty" class="select">
-          <option value="low">Easy</option>
-          <option value="medium" selected>Medium</option>
-          <option value="high">Hard</option>
+        <select id="gen-style" class="select" title="How many loops in the maze">
+          <option value="0">One path (perfect)</option>
+          <option value="0.08" selected>A few loops</option>
+          <option value="0.25">Many loops</option>
         </select>
         <button type="button" class="btn btn-primary" id="btn-generate">Generate maze</button>
       </div>
@@ -38,22 +37,14 @@
       </div>
 
       <div class="control-group">
-        <span class="control-label">Tweak</span>
-        <button type="button" class="btn mode-btn is-active" data-mode="path">Paint path</button>
-        <button type="button" class="btn mode-btn" data-mode="wall">Paint wall</button>
-        <button type="button" class="btn" id="btn-clear">Clear</button>
-        <button type="button" class="btn" id="btn-check">Check solvable</button>
-      </div>
-
-      <div class="control-group">
-        <span class="control-label">Data</span>
+        <span class="control-label">View</span>
+        <button type="button" class="btn" id="btn-solution">Show solution</button>
         <button type="button" class="btn" id="btn-export">Export JSON</button>
-        <button type="button" class="btn" id="btn-import">Import JSON</button>
       </div>
     </section>
 
     <section class="board">
-      <div id="grid" class="grid" aria-label="9 by 9 maze grid"></div>
+      <svg id="maze-svg" xmlns="http://www.w3.org/2000/svg"></svg>
     </section>
 
     <section class="status">
@@ -62,14 +53,15 @@
 
     <section class="io">
       <label for="json-area">Maze JSON</label>
-      <textarea id="json-area" spellcheck="false" rows="8"></textarea>
+      <textarea id="json-area" spellcheck="false" rows="6" readonly></textarea>
     </section>
 
     <section class="legend">
-      <div><span class="swatch swatch-path"></span> Path</div>
+      <div><span class="swatch swatch-cell"></span> Room</div>
+      <div><span class="swatch swatch-center"></span> Center chamber</div>
       <div><span class="swatch swatch-wall"></span> Wall</div>
-      <div><span class="swatch swatch-center"></span> Center (locked open)</div>
       <div><span class="swatch swatch-entrance"></span> Entrance</div>
+      <div><span class="swatch swatch-path"></span> Solution</div>
     </section>
   </main>
 
