@@ -160,7 +160,10 @@
       entrancesActive[side] = !entrancesActive[side];
       btn.classList.toggle("is-active", entrancesActive[side]);
       render();
-      setStatus(`Entrance "${side}" ${entrancesActive[side] ? "enabled" : "disabled"}.`);
+      setStatus(
+        `Entrance "${side}" ${entrancesActive[side] ? "enabled" : "disabled"}. ` +
+        `Hit Generate to recarve corridors.`
+      );
     });
   });
 
@@ -170,6 +173,24 @@
       btn.classList.add("is-active");
       paintMode = btn.dataset.mode;
     });
+  });
+
+  document.getElementById("btn-generate").addEventListener("click", () => {
+    const difficulty = document.getElementById("gen-difficulty").value;
+    const sidesUsed = generateMaze(difficulty);
+    const result = checkSolvable();
+    showSolvability(result);
+    setStatus(
+      `Generated ${difficulty} maze with ${sidesUsed.length} entrance${sidesUsed.length === 1 ? "" : "s"} (${sidesUsed.join(", ")}).`,
+      result.ok ? "ok" : "err"
+    );
+  });
+
+  document.getElementById("btn-rand-entrances").addEventListener("click", () => {
+    randomizeEntrances();
+    syncEntranceButtons();
+    render();
+    setStatus(`Randomized entrances: ${activeSides().join(", ") || "none"}.`);
   });
 
   document.getElementById("btn-clear").addEventListener("click", () => {
@@ -349,6 +370,138 @@
     }
   }
 
+  // --- Generation ----------------------------------------------------------
+
+  const BRANCH_COUNT = { low: 1, medium: 4, high: 8 };
+  const BRANCH_MAX_LEN = { low: 3, medium: 5, high: 7 };
+
+  function activeSides() {
+    return Object.keys(entrancesActive).filter((s) => entrancesActive[s]);
+  }
+
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function randomizeEntrances() {
+    const sides = shuffle(Object.keys(ENTRANCES));
+    const count = 1 + Math.floor(Math.random() * 4);
+    for (const s of Object.keys(entrancesActive)) entrancesActive[s] = false;
+    for (let i = 0; i < count; i++) entrancesActive[sides[i]] = true;
+  }
+
+  function generateMaze(difficulty) {
+    // Wipe paintable cells.
+    for (let r = 0; r < SIZE; r++) {
+      for (let c = 0; c < SIZE; c++) {
+        if (roleOf(r, c) === ROLE_NORMAL) cells[r][c].open = false;
+      }
+    }
+
+    // Need at least one entrance — randomize 1–4 if none selected.
+    if (activeSides().length === 0) {
+      randomizeEntrances();
+      syncEntranceButtons();
+    }
+
+    // Carve a winding random path from each active entrance to the center.
+    const sides = activeSides();
+    for (const side of sides) {
+      const start = ENTRANCES[side];
+      const path = randomDFSPathToCenter(start.r, start.c);
+      if (path) {
+        for (const [r, c] of path) {
+          if (roleOf(r, c) === ROLE_NORMAL) cells[r][c].open = true;
+        }
+      }
+    }
+
+    // Sprinkle dead-end branches off existing corridors for maze feel.
+    const branches = BRANCH_COUNT[difficulty] ?? BRANCH_COUNT.medium;
+    const maxLen = BRANCH_MAX_LEN[difficulty] ?? BRANCH_MAX_LEN.medium;
+    addDeadEndBranches(branches, maxLen);
+
+    render();
+    return sides;
+  }
+
+  // Randomized DFS from (startR, startC) to any center cell. The first path
+  // found tends to be winding because DFS commits to a direction before
+  // backtracking. Other entrance cells are blocked so paths don't merge there.
+  function randomDFSPathToCenter(startR, startC) {
+    const blocked = new Set();
+    for (const side of Object.keys(ENTRANCES)) {
+      const e = ENTRANCES[side];
+      if (!(e.r === startR && e.c === startC)) blocked.add(e.r * SIZE + e.c);
+    }
+    const visited = new Set([startR * SIZE + startC]);
+    const stack = [{ r: startR, c: startC, path: [[startR, startC]] }];
+    while (stack.length) {
+      const node = stack.pop();
+      if (isCenter(node.r, node.c)) return node.path;
+      const dirs = shuffle([[-1,0],[1,0],[0,-1],[0,1]]);
+      for (const [dr, dc] of dirs) {
+        const nr = node.r + dr;
+        const nc = node.c + dc;
+        if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue;
+        const key = nr * SIZE + nc;
+        if (visited.has(key) || blocked.has(key)) continue;
+        visited.add(key);
+        stack.push({ r: nr, c: nc, path: node.path.concat([[nr, nc]]) });
+      }
+    }
+    return null;
+  }
+
+  // Pick random open cells and snake outward into walls, creating dead-ends.
+  // Skips cells adjacent to the center so we don't accidentally widen it.
+  function addDeadEndBranches(branches, maxLen) {
+    for (let i = 0; i < branches; i++) {
+      const seeds = [];
+      for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+          if (roleOf(r, c) === ROLE_NORMAL && cells[r][c].open) seeds.push([r, c]);
+        }
+      }
+      if (seeds.length === 0) return;
+      let [cr, cc] = seeds[Math.floor(Math.random() * seeds.length)];
+      const len = 2 + Math.floor(Math.random() * (maxLen - 1));
+      for (let s = 0; s < len; s++) {
+        const dirs = shuffle([[-1,0],[1,0],[0,-1],[0,1]]);
+        let moved = false;
+        for (const [dr, dc] of dirs) {
+          const nr = cr + dr;
+          const nc = cc + dc;
+          if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue;
+          if (roleOf(nr, nc) !== ROLE_NORMAL) continue;
+          if (cells[nr][nc].open) continue;
+          // Avoid carving a cell that touches the center, which would widen the open room.
+          if (touchesCenter(nr, nc)) continue;
+          cells[nr][nc].open = true;
+          cr = nr; cc = nc;
+          moved = true;
+          break;
+        }
+        if (!moved) break;
+      }
+    }
+  }
+
+  function touchesCenter(r, c) {
+    if (isCenter(r, c)) return true;
+    for (const [dr, dc] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+      const nr = r + dr;
+      const nc = c + dc;
+      if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue;
+      if (isCenter(nr, nc)) return true;
+    }
+    return false;
+  }
+
   // --- Init ----------------------------------------------------------------
 
   function setStatus(msg, kind = "") {
@@ -359,7 +512,14 @@
   }
 
   buildGrid();
+  randomizeEntrances();
   syncEntranceButtons();
-  render();
-  setStatus("Ready. Top entrance enabled by default.");
+  const initialSides = generateMaze("medium");
+  const initialCheck = checkSolvable();
+  showSolvability(initialCheck);
+  setStatus(
+    `Generated medium maze with ${initialSides.length} entrance${initialSides.length === 1 ? "" : "s"} (${initialSides.join(", ")}). ` +
+    `Hit Generate for a new one.`,
+    initialCheck.ok ? "ok" : ""
+  );
 })();

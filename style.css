@@ -100,6 +100,28 @@ header h1 {
   font-weight: 600;
 }
 
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent-2);
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background: #7dd3fc;
+  border-color: var(--accent);
+}
+
+.select {
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
 .entrance-btn.is-active {
   background: var(--entrance);
   border-color: var(--entrance-edge);

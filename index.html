@@ -11,29 +11,37 @@
     <header>
       <h1>9&times;9 Maze Designer</h1>
       <p class="subtitle">
-        Center 3&times;3 is always open. Toggle 1&ndash;4 entrances on the middle of each side.
-        Click or drag inside the grid to paint walls and paths.
+        Center 3&times;3 is always open. Pick which sides get an entrance (or hit Random),
+        choose a difficulty, and let the tool generate a solvable maze for you.
+        Painting controls are there if you want to hand-tweak the result.
       </p>
     </header>
 
     <section class="controls">
+      <div class="control-group">
+        <span class="control-label">Generate</span>
+        <select id="gen-difficulty" class="select">
+          <option value="low">Easy</option>
+          <option value="medium" selected>Medium</option>
+          <option value="high">Hard</option>
+        </select>
+        <button type="button" class="btn btn-primary" id="btn-generate">Generate maze</button>
+      </div>
+
       <div class="control-group">
         <span class="control-label">Entrances</span>
         <button type="button" class="btn entrance-btn" data-side="top">Top</button>
         <button type="button" class="btn entrance-btn" data-side="right">Right</button>
         <button type="button" class="btn entrance-btn" data-side="bottom">Bottom</button>
         <button type="button" class="btn entrance-btn" data-side="left">Left</button>
+        <button type="button" class="btn" id="btn-rand-entrances" title="Randomize 1–4 entrances">Random</button>
       </div>
 
       <div class="control-group">
-        <span class="control-label">Paint</span>
-        <button type="button" class="btn mode-btn is-active" data-mode="path">Path</button>
-        <button type="button" class="btn mode-btn" data-mode="wall">Wall</button>
-      </div>
-
-      <div class="control-group">
-        <span class="control-label">Grid</span>
-        <button type="button" class="btn" id="btn-clear">Clear paths</button>
+        <span class="control-label">Tweak</span>
+        <button type="button" class="btn mode-btn is-active" data-mode="path">Paint path</button>
+        <button type="button" class="btn mode-btn" data-mode="wall">Paint wall</button>
+        <button type="button" class="btn" id="btn-clear">Clear</button>
         <button type="button" class="btn" id="btn-check">Check solvable</button>
       </div>
 
